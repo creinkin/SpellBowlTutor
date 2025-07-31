@@ -3,53 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spelling Bee Practice Game</title>
+    <title>Indiana Spell Bowl Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Nunito', sans-serif;
+            transition: background-color 0.5s, color 0.5s;
         }
-        .correct-animation {
-            animation: correct .5s ease-in-out;
+        /* --- THEMES --- */
+        .theme-default { --primary: #3b82f6; --secondary: #a855f7; --accent: #14b8a6; --header: #3b82f6; --bg-main: #f3f4f6; --bg-card: #ffffff; --text-main: #1f2937; --text-light: #6b7280; --text-inverted: #ffffff; }
+        .theme-ocean { --primary: #0ea5e9; --secondary: #6366f1; --accent: #22d3ee; --header: #0ea5e9; --bg-main: #0c4a6e; --bg-card: #07334d; --text-main: #e0f2fe; --text-light: #bae6fd; --text-inverted: #ffffff; }
+        .theme-sunset { --primary: #f97316; --secondary: #ec4899; --accent: #d946ef; --header: #f97316; --bg-main: #4c1d95; --bg-card: #3b0764; --text-main: #f5d0fe; --text-light: #e9d5ff; --text-inverted: #ffffff; }
+        .theme-galaxy { --primary: #8b5cf6; --secondary: #d946ef; --accent: #f472b6; --header: #a78bfa; --bg-main: #1e1b4b; --bg-card: #312e81; --text-main: #e0e7ff; --text-light: #c7d2fe; --text-inverted: #ffffff; }
+
+        body { background-color: var(--bg-main); color: var(--text-main); }
+        .game-choice-btn.bg-blue-500, #speak-word { background-color: var(--primary); }
+        .game-choice-btn.bg-blue-500:hover { background-color: color-mix(in srgb, var(--primary) 85%, black); }
+        .game-choice-btn.bg-purple-500 { background-color: var(--secondary); }
+        .game-choice-btn.bg-purple-500:hover { background-color: color-mix(in srgb, var(--secondary) 85%, black); }
+        .game-choice-btn.bg-teal-500 { background-color: var(--accent); }
+        .game-choice-btn.bg-teal-500:hover { background-color: color-mix(in srgb, var(--accent) 85%, black); }
+        .game-choice-btn.bg-orange-500 { background-color: var(--primary); }
+        .game-choice-btn.bg-orange-500:hover { background-color: color-mix(in srgb, var(--primary) 85%, black); }
+        #app h1 { color: var(--header); }
+        #progress-container, #game-screen > div, #leaderboard-screen > div, footer > div, #name-modal > div { background-color: var(--bg-card); }
+        #xp-display, #word-count, .text-gray-500 { color: var(--text-light); }
+        .game-choice-btn, #leaderboard-back-btn, #save-score-btn, #show-leaderboard-btn { color: var(--text-inverted); }
+
+        /* --- ANIMATIONS --- */
+        .correct-animation { animation: correct .5s ease-in-out; }
+        @keyframes correct { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .incorrect-animation { animation: incorrect .5s ease-in-out; }
+        @keyframes incorrect { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); } }
+        .xp-gain-animation { animation: xp-gain 1s ease-out forwards; position: absolute; right: 1rem; top: -1.5rem; opacity: 1; }
+        @keyframes xp-gain { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-50px); opacity: 0; } }
+        .modal-backdrop { background-color: rgba(0,0,0,0.6); }
+        #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
+        #level-up-notification {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            animation: slide-in-out 4s ease-in-out forwards;
         }
-        @keyframes correct {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(48, 209, 88, 0.7); }
-            50% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(48, 209, 88, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(48, 209, 88, 0); }
+        @keyframes slide-in-out {
+            0%, 100% { top: -100px; opacity: 0; }
+            10%, 90% { top: 20px; opacity: 1; }
         }
-        .incorrect-animation {
-            animation: incorrect .5s ease-in-out;
-        }
-        @keyframes incorrect {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-10px); }
-            40%, 80% { transform: translateX(10px); }
-        }
-        .xp-gain-animation {
-            animation: xp-gain 1s ease-out forwards;
-            position: absolute;
-            right: 1rem;
-            top: -1.5rem;
-            opacity: 1;
-        }
-        @keyframes xp-gain {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-50px); opacity: 0; }
-        }
+        #millennia-award { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-500">
+<body>
 
     <div id="app" class="container mx-auto p-4 md:p-8 max-w-4xl">
-
         <!-- Header and Progress -->
-        <header class="mb-8">
-            <h1 class="text-4xl md:text-5xl font-black text-center text-blue-600 dark:text-blue-400 mb-4">Spelling Bee Pro</h1>
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg">
+        <header class="mb-8 relative">
+            <h1 class="text-4xl md:text-5xl font-black text-center mb-4">Indiana Spell Bowl Pro</h1>
+            <div id="millennia-award" class="hidden absolute -top-4 -left-4 text-5xl" title="Speller of the Millennia!">🏆</div>
+            <div id="progress-container" class="p-4 rounded-xl shadow-lg">
                 <div class="flex justify-between items-center mb-2">
                     <span class="font-bold text-lg">Level <span id="level-display">1</span></span>
-                    <span id="xp-display" class="text-sm text-gray-500 dark:text-gray-400">0 / 100 XP</span>
+                    <span id="xp-display" class="text-sm">0 / 100 XP</span>
                 </div>
                 <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 relative overflow-hidden">
                     <div id="progress-bar" class="bg-green-500 h-4 rounded-full transition-all duration-500 ease-out" style="width: 0%;"></div>
@@ -57,107 +70,156 @@
             </div>
         </header>
 
-        <!-- Main Content: Game Menu or Game Screen -->
+        <!-- Main Content -->
         <main id="main-content">
-            <!-- Game Menu (Default View) -->
+            <!-- Game Menu -->
             <div id="game-menu">
                 <h2 class="text-2xl font-bold text-center mb-6">Choose a Game</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <button data-game="spelling-quiz" class="game-choice-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-6 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
-                        <span class="text-2xl">📝</span>
-                        <h3 class="text-xl font-bold mt-2">Spelling Quiz</h3>
-                        <p class="text-sm opacity-80">Listen and type the word.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <button data-game="spelling-quiz" class="game-choice-btn bg-blue-500 text-white font-bold py-6 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
+                        <span class="text-2xl">📝</span><h3 class="text-xl font-bold mt-2">Spelling Quiz</h3><p class="text-sm opacity-80">Listen and type the word.</p>
                     </button>
-                    <button data-game="word-scramble" class="game-choice-btn bg-purple-500 hover:bg-purple-600 text-white font-bold py-6 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
-                        <span class="text-2xl">🔄</span>
-                        <h3 class="text-xl font-bold mt-2">Word Scramble</h3>
-                        <p class="text-sm opacity-80">Unscramble the letters.</p>
+                    <button data-game="word-scramble" class="game-choice-btn bg-purple-500 text-white font-bold py-6 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
+                        <span class="text-2xl">🔄</span><h3 class="text-xl font-bold mt-2">Word Scramble</h3><p class="text-sm opacity-80">Unscramble the letters.</p>
                     </button>
-                    <button data-game="missing-letter" class="game-choice-btn bg-teal-500 hover:bg-teal-600 text-white font-bold py-6 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
-                        <span class="text-2xl">🤔</span>
-                        <h3 class="text-xl font-bold mt-2">Missing Letter</h3>
-                        <p class="text-sm opacity-80">Fill in the blanks.</p>
+                    <button data-game="missing-letter" class="game-choice-btn bg-teal-500 text-white font-bold py-6 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
+                        <span class="text-2xl">🤔</span><h3 class="text-xl font-bold mt-2">Missing Letter</h3><p class="text-sm opacity-80">Fill in the blanks.</p>
+                    </button>
+                    <button data-game="timed-challenge" class="game-choice-btn bg-orange-500 text-white font-bold py-6 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
+                        <span class="text-2xl">⏱️</span><h3 class="text-xl font-bold mt-2">Timed Challenge</h3><p class="text-sm opacity-80">Score as many as you can!</p>
                     </button>
                 </div>
-                 <div id="no-words-message" class="text-center text-red-500 mt-6 font-semibold hidden">
-                    Please upload a word list in the settings below before starting a game!
+                 <div id="no-words-message" class="text-center text-red-500 mt-6 font-semibold hidden">Please upload a word list in the settings below before starting a game!</div>
+                 <div class="text-center mt-8">
+                    <button id="show-leaderboard-btn" class="bg-yellow-500 hover:bg-yellow-600 font-bold py-3 px-6 rounded-lg shadow-md">🏆 View Leaderboard</button>
                 </div>
             </div>
 
-            <!-- Game Screen (Hidden by default) -->
+            <!-- Game Screen -->
             <div id="game-screen" class="hidden">
-                 <div class="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg relative">
-                    <button id="back-to-menu" class="absolute top-4 left-4 text-gray-500 hover:text-blue-500 dark:hover:text-blue-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8a5 5 0 000-10H6" />
-                        </svg>
-                    </button>
+                 <div class="p-6 md:p-8 rounded-xl shadow-lg relative">
+                    <button id="back-to-menu" class="absolute top-4 left-4 text-gray-500 hover:text-blue-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8a5 5 0 000-10H6" /></svg></button>
+                    <div id="game-header-info" class="absolute top-4 right-4 text-lg font-bold"></div>
                     <div id="xp-feedback" class="xp-gain-animation text-green-500 font-bold hidden">+10 XP</div>
+                    <div id="game-container" class="text-center mt-8"></div>
+                    <input type="text" id="answer-input" class="w-full mt-6 p-4 text-lg border-2 border-gray-300 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-center">
+                    <button id="submit-answer" class="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg shadow-md">Check</button>
+                </div>
+            </div>
 
-                    <div id="game-container" class="text-center">
-                        <!-- Game content will be injected here -->
+            <!-- Leaderboard Screen -->
+            <div id="leaderboard-screen" class="hidden">
+                <div class="p-6 md:p-8 rounded-xl shadow-lg">
+                    <h2 class="text-3xl font-black text-center mb-6 text-yellow-500">🏆 Leaderboard 🏆</h2>
+                    <ol id="leaderboard-list" class="space-y-3"></ol>
+                    <div class="text-center mt-8">
+                        <button id="leaderboard-back-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md">Back to Menu</button>
                     </div>
-                    
-                    <input type="text" id="answer-input" class="w-full mt-6 p-4 text-lg border-2 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-center" placeholder="Type your answer...">
-                    <button id="submit-answer" class="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg shadow-md hover:shadow-lg transition-transform transform hover:scale-105">Check</button>
                 </div>
             </div>
         </main>
 
         <!-- Settings -->
         <footer class="mt-12">
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+            <div class="p-6 rounded-xl shadow-lg">
                 <h2 class="text-xl font-bold mb-4 text-center">Settings</h2>
-                <div class="flex flex-col md:flex-row justify-around items-center gap-6">
-                    <!-- Word List Upload -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
                     <div class="text-center">
                         <label for="word-list-upload" class="block mb-2 font-semibold">Upload Word List (.txt)</label>
-                        <input type="file" id="word-list-upload" accept=".txt" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/50 dark:file:text-blue-300 dark:hover:file:bg-blue-900">
-                        <p id="word-count" class="text-sm mt-2 text-gray-500 dark:text-gray-400">0 words loaded.</p>
+                        <input type="file" id="word-list-upload" accept=".txt" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <p id="word-count" class="text-sm mt-2">0 words loaded.</p>
                     </div>
-
-                    <!-- Sound Toggle -->
-                    <div class="flex items-center gap-3">
-                        <span class="font-semibold">Sound:</span>
-                        <label for="sound-toggle" class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="sound-toggle" class="sr-only peer" checked>
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                        </label>
+                    <div class="flex items-center justify-center gap-4 flex-wrap">
+                         <div class="flex items-center gap-3">
+                            <span class="font-semibold">Sound:</span>
+                            <label for="sound-toggle" class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="sound-toggle" class="sr-only peer" checked><div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div></label>
+                        </div>
+                        <div>
+                            <label for="theme-selector" class="font-semibold mr-2">Theme:</label>
+                            <select id="theme-selector" class="p-2 rounded-md border-2 border-gray-300 bg-white dark:bg-gray-700"></select>
+                        </div>
+                        <div>
+                            <label for="celebration-selector" class="font-semibold mr-2">Level Up:</label>
+                            <select id="celebration-selector" class="p-2 rounded-md border-2 border-gray-300 bg-white dark:bg-gray-700"></select>
+                        </div>
                     </div>
-
-                    <!-- Reset Progress -->
-                    <div>
-                         <button id="reset-progress" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-transform transform hover:scale-105">Reset Progress</button>
+                    <div class="text-center">
+                         <button id="reset-progress" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md">Reset Progress</button>
                     </div>
                 </div>
             </div>
         </footer>
     </div>
 
+    <!-- Modals and Notifications -->
+    <div id="name-modal" class="fixed inset-0 w-full h-full flex items-center justify-center modal-backdrop hidden z-50">
+        <div class="p-8 rounded-xl shadow-2xl w-full max-w-sm text-center">
+            <h2 class="text-2xl font-bold mb-2">Challenge Complete!</h2>
+            <p class="mb-4">Your score: <span id="final-score" class="font-bold text-3xl text-green-500"></span></p>
+            <p class="mb-4 font-semibold">Enter your name for the leaderboard:</p>
+            <input type="text" id="player-name-input" class="w-full p-3 text-lg border-2 rounded-lg text-center" placeholder="Your Name" maxlength="20">
+            <div id="emoji-picker" class="hidden mt-2">
+                <p class="text-sm mb-1">Add an emoji!</p>
+                <div id="emoji-list" class="flex flex-wrap justify-center gap-2"></div>
+            </div>
+            <button id="save-score-btn" class="w-full mt-4 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 rounded-lg shadow-md">Save Score</button>
+        </div>
+    </div>
+    <div id="level-up-notification" class="hidden bg-green-500 text-white font-bold py-3 px-6 rounded-full shadow-lg z-50"></div>
+    <canvas id="confetti-canvas"></canvas>
+
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         // --- DOM ELEMENTS ---
-        const levelDisplay = document.getElementById('level-display');
-        const xpDisplay = document.getElementById('xp-display');
-        const progressBar = document.getElementById('progress-bar');
-        const gameMenu = document.getElementById('game-menu');
-        const gameScreen = document.getElementById('game-screen');
-        const gameContainer = document.getElementById('game-container');
-        const answerInput = document.getElementById('answer-input');
-        const submitAnswerBtn = document.getElementById('submit-answer');
-        const backToMenuBtn = document.getElementById('back-to-menu');
+        const allDOMElements = {
+            body: document.body,
+            levelDisplay: document.getElementById('level-display'),
+            xpDisplay: document.getElementById('xp-display'),
+            progressBar: document.getElementById('progress-bar'),
+            progressContainer: document.getElementById('progress-container'),
+            gameMenu: document.getElementById('game-menu'),
+            gameScreen: document.getElementById('game-screen'),
+            gameContainer: document.getElementById('game-container'),
+            gameHeaderInfo: document.getElementById('game-header-info'),
+            answerInput: document.getElementById('answer-input'),
+            submitAnswerBtn: document.getElementById('submit-answer'),
+            backToMenuBtn: document.getElementById('back-to-menu'),
+            wordListUpload: document.getElementById('word-list-upload'),
+            wordCountDisplay: document.getElementById('word-count'),
+            soundToggle: document.getElementById('sound-toggle'),
+            resetProgressBtn: document.getElementById('reset-progress'),
+            xpFeedback: document.getElementById('xp-feedback'),
+            noWordsMessage: document.getElementById('no-words-message'),
+            leaderboardScreen: document.getElementById('leaderboard-screen'),
+            showLeaderboardBtn: document.getElementById('show-leaderboard-btn'),
+            leaderboardList: document.getElementById('leaderboard-list'),
+            leaderboardBackBtn: document.getElementById('leaderboard-back-btn'),
+            nameModal: document.getElementById('name-modal'),
+            finalScoreDisplay: document.getElementById('final-score'),
+            playerNameInput: document.getElementById('player-name-input'),
+            saveScoreBtn: document.getElementById('save-score-btn'),
+            levelUpNotification: document.getElementById('level-up-notification'),
+            confettiCanvas: document.getElementById('confetti-canvas'),
+            themeSelector: document.getElementById('theme-selector'),
+            celebrationSelector: document.getElementById('celebration-selector'),
+            emojiPicker: document.getElementById('emoji-picker'),
+            emojiList: document.getElementById('emoji-list'),
+            millenniaAward: document.getElementById('millennia-award'),
+        };
         const gameChoiceBtns = document.querySelectorAll('.game-choice-btn');
-        const wordListUpload = document.getElementById('word-list-upload');
-        const wordCountDisplay = document.getElementById('word-count');
-        const soundToggle = document.getElementById('sound-toggle');
-        const resetProgressBtn = document.getElementById('reset-progress');
-        const xpFeedback = document.getElementById('xp-feedback');
-        const noWordsMessage = document.getElementById('no-words-message');
 
         // --- GAME STATE & CONFIG ---
+        const LEVEL_REWARDS = {
+            5: { type: 'theme', id: 'ocean', name: 'Ocean Theme' },
+            10: { type: 'theme', id: 'sunset', name: 'Sunset Theme' },
+            20: { type: 'emoji', id: 'set1', name: 'Emojis', emojis: ['⭐', '🔥', '💯', '🧠', '💡'] },
+            50: { type: 'theme', id: 'galaxy', name: 'Galaxy Theme' },
+            100: { type: 'celebration', id: 'fireworks', name: 'Fireworks' },
+            1000: { type: 'award', id: 'millennia', name: 'Speller of the Millennia' }
+        };
+
         let state = {
-            level: 1,
-            xp: 0,
+            level: 1, xp: 0,
             words: [
               "abalone",
               "abbreviate",
@@ -308,144 +370,221 @@
               "calomel",
               "camaraderie"
             ],
-            settings: {
-                sound: true,
-            },
-            currentGame: null,
-            currentWord: '',
-            correctAnswer: ''
+            settings: { sound: true, activeTheme: 'default', activeCelebration: 'confetti' },
+            leaderboard: [],
+            unlockedThemes: ['default'],
+            unlockedEmojis: [],
+            unlockedCelebrations: ['confetti'],
+            hasMillenniaAward: false,
+            currentGame: null, currentWord: '', correctAnswer: '',
+            timedChallenge: { timer: null, timeLeft: 0, score: 0 }
         };
 
-        const XP_PER_LEVEL = 100;
         const XP_PER_CORRECT = 10;
-        
-        // --- LOCAL STORAGE ---
+        const TIMED_CHALLENGE_DURATION = 60;
         const SAVE_KEY = 'spellBowlProState';
 
+        // --- STATE MANAGEMENT ---
         function saveState() {
-            localStorage.setItem(SAVE_KEY, JSON.stringify({
-                level: state.level,
-                xp: state.xp,
-                words: state.words,
-                settings: state.settings
-            }));
+            const stateToSave = { ...state };
+            delete stateToSave.timedChallenge.timer; // Don't save active timers
+            localStorage.setItem(SAVE_KEY, JSON.stringify(stateToSave));
         }
 
         function loadState() {
             const savedState = localStorage.getItem(SAVE_KEY);
             if (savedState) {
-                const parsedState = JSON.parse(savedState);
-                state = { ...state, ...parsedState };
+                const parsed = JSON.parse(savedState);
+                // Deep merge to prevent new properties from being overwritten by old save files
+                state = {
+                    ...state, ...parsed,
+                    settings: { ...state.settings, ...(parsed.settings || {}) },
+                };
             }
+            applyTheme(state.settings.activeTheme);
+            populateThemeSelector();
+            populateCelebrationSelector();
             updateUI();
         }
 
-        // --- UI UPDATES ---
-        function updateUI() {
-            // Update level and XP
-            levelDisplay.textContent = state.level;
-            const xpForCurrentLevel = state.xp % XP_PER_LEVEL;
-            xpDisplay.textContent = `${xpForCurrentLevel} / ${XP_PER_LEVEL} XP`;
-            progressBar.style.width = `${xpForCurrentLevel}%`;
-            
-            // Update settings controls
-            soundToggle.checked = state.settings.sound;
+        // --- LEVELING & REWARDS ---
+        function getCumulativeXpForLevel(level) {
+            if (level <= 1) return 0;
+            let totalXp = 0;
+            for (let i = 1; i < level; i++) { totalXp += 100 + (i - 1) * 50; }
+            return totalXp;
+        }
 
-            // Update word count
-            wordCountDisplay.textContent = `${state.words.length} words loaded.`;
-            
-            // Show/hide no-words message
-            if (state.words.length === 0) {
-                 noWordsMessage.classList.remove('hidden');
+        function handleLevelUp(newLevel) {
+            if (state.settings.activeCelebration === 'fireworks') {
+                launchFireworks();
             } else {
-                 noWordsMessage.classList.add('hidden');
+                launchConfetti();
             }
+            
+            const reward = LEVEL_REWARDS[newLevel];
+            if (!reward) {
+                showLevelUpNotification(`🎉 Congratulations! You've reached Level ${newLevel}!`);
+                return;
+            }
+
+            let notificationMessage = `🎉 Level ${newLevel}! You've unlocked ${reward.name}!`;
+            switch(reward.type) {
+                case 'theme':
+                    if (!state.unlockedThemes.includes(reward.id)) {
+                        state.unlockedThemes.push(reward.id);
+                        populateThemeSelector();
+                    }
+                    break;
+                case 'emoji':
+                     if (!state.unlockedEmojis.some(e => e === reward.emojis[0])) {
+                        state.unlockedEmojis.push(...reward.emojis);
+                    }
+                    break;
+                case 'celebration':
+                    if (!state.unlockedCelebrations.includes(reward.id)) {
+                        state.unlockedCelebrations.push(reward.id);
+                        populateCelebrationSelector();
+                    }
+                    break;
+                case 'award':
+                    state.hasMillenniaAward = true;
+                    notificationMessage = `🏆 UNBELIEVABLE! You've earned the ${reward.name}! 🏆`;
+                    break;
+            }
+            showLevelUpNotification(notificationMessage);
+        }
+
+        // --- UI & THEMES ---
+        function updateUI() {
+            const xpForCurrentLevelStart = getCumulativeXpForLevel(state.level);
+            const xpForNextLevel = getCumulativeXpForLevel(state.level + 1);
+            const xpIntoCurrentLevel = state.xp - xpForCurrentLevelStart;
+            const xpNeededForLevelUp = xpForNextLevel - xpForCurrentLevelStart;
+
+            allDOMElements.levelDisplay.textContent = state.level;
+            allDOMElements.xpDisplay.textContent = `${xpIntoCurrentLevel} / ${xpNeededForLevelUp} XP`;
+            allDOMElements.progressBar.style.width = xpNeededForLevelUp > 0 ? `${(xpIntoCurrentLevel / xpNeededForLevelUp) * 100}%` : '0%';
+            allDOMElements.soundToggle.checked = state.settings.sound;
+            allDOMElements.wordCountDisplay.textContent = `${state.words.length} words loaded.`;
+            allDOMElements.noWordsMessage.classList.toggle('hidden', state.words.length === 0);
+            allDOMElements.millenniaAward.classList.toggle('hidden', !state.hasMillenniaAward);
         }
         
-        // --- AUDIO (STUBBED) ---
-        /**
-         * Plays a sound effect if sounds are enabled.
-         * This is a placeholder and does not play real audio yet.
-         * @param {string} soundName - The name of the sound to play ('correct' or 'incorrect').
-         */
-        function playSound(soundName) {
-            if (!state.settings.sound) return;
-            console.log(`Playing sound (stubbed): ${soundName}`);
-            // In a future version, we would use the Web Audio API or Audio objects here.
-            // For example:
-            // if (soundName === 'correct') { correctSound.play(); }
-            // if (soundName === 'incorrect') { incorrectSound.play(); }
+        function applyTheme(themeName) {
+            allDOMElements.body.className = `theme-${themeName}`;
+            state.settings.activeTheme = themeName;
         }
-        
-        /**
-         * Uses the browser's speech synthesis to say a word.
-         * @param {string} text - The text to speak.
-         */
-        function speak(text) {
-             if (!state.settings.sound) return;
-             // Cancel any previous speech to avoid overlap
-             window.speechSynthesis.cancel();
-             const utterance = new SpeechSynthesisUtterance(text);
-             utterance.rate = 0.9;
-             window.speechSynthesis.speak(utterance);
+
+        function populateThemeSelector() {
+            const { themeSelector } = allDOMElements;
+            themeSelector.innerHTML = '';
+            const allThemes = { default: 'Default', ocean: 'Ocean (Lvl 5)', sunset: 'Sunset (Lvl 10)', galaxy: 'Galaxy (Lvl 50)' };
+            for (const [key, name] of Object.entries(allThemes)) {
+                const option = document.createElement('option');
+                option.value = key;
+                if (state.unlockedThemes.includes(key)) {
+                    option.textContent = name.replace(/ \(Lvl \d+\)/, '');
+                } else {
+                    option.textContent = name;
+                    option.disabled = true;
+                }
+                themeSelector.appendChild(option);
+            }
+            themeSelector.value = state.settings.activeTheme;
+        }
+
+        function populateCelebrationSelector() {
+            const { celebrationSelector } = allDOMElements;
+            celebrationSelector.innerHTML = '';
+            const allCelebrations = { confetti: 'Confetti', fireworks: 'Fireworks (Lvl 100)' };
+             for (const [key, name] of Object.entries(allCelebrations)) {
+                const option = document.createElement('option');
+                option.value = key;
+                if (state.unlockedCelebrations.includes(key)) {
+                    option.textContent = name.replace(/ \(Lvl \d+\)/, '');
+                } else {
+                    option.textContent = name;
+                    option.disabled = true;
+                }
+                celebrationSelector.appendChild(option);
+            }
+            celebrationSelector.value = state.settings.activeCelebration;
+        }
+
+        function populateEmojiPicker() {
+            const { emojiPicker, emojiList, playerNameInput } = allDOMElements;
+            if (state.unlockedEmojis.length > 0) {
+                emojiPicker.classList.remove('hidden');
+                emojiList.innerHTML = '';
+                state.unlockedEmojis.forEach(emoji => {
+                    const button = document.createElement('button');
+                    button.className = 'p-1 text-2xl rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors';
+                    button.textContent = emoji;
+                    button.onclick = () => {
+                        playerNameInput.value += emoji;
+                        playerNameInput.focus();
+                    };
+                    emojiList.appendChild(button);
+                });
+            } else {
+                emojiPicker.classList.add('hidden');
+            }
         }
 
         // --- GAME LOGIC ---
         function getRandomWord() {
             if (state.words.length === 0) return null;
-            const randomIndex = Math.floor(Math.random() * state.words.length);
-            return state.words[randomIndex];
+            return state.words[Math.floor(Math.random() * state.words.length)];
         }
 
         function startGame(gameType) {
             if (state.words.length === 0) {
-                noWordsMessage.classList.remove('hidden');
-                // Vibrate the message to draw attention
-                noWordsMessage.classList.add('incorrect-animation');
-                setTimeout(() => noWordsMessage.classList.remove('incorrect-animation'), 500);
+                allDOMElements.noWordsMessage.classList.add('incorrect-animation');
+                setTimeout(() => allDOMElements.noWordsMessage.classList.remove('incorrect-animation'), 500);
                 return;
             }
-            
             state.currentGame = gameType;
-            gameMenu.classList.add('hidden');
-            gameScreen.classList.remove('hidden');
-            answerInput.value = '';
-            answerInput.focus();
-            
+            allDOMElements.gameMenu.classList.add('hidden');
+            allDOMElements.leaderboardScreen.classList.add('hidden');
+            allDOMElements.gameScreen.classList.remove('hidden');
+            allDOMElements.progressContainer.classList.toggle('hidden', gameType === 'timed-challenge');
+            allDOMElements.gameHeaderInfo.innerHTML = '';
+
+            if (gameType === 'timed-challenge') {
+                state.timedChallenge.score = 0;
+                state.timedChallenge.timeLeft = TIMED_CHALLENGE_DURATION;
+                updateTimerDisplay();
+                state.timedChallenge.timer = setInterval(tickTimer, 1000);
+            }
             loadNextChallenge();
         }
 
         function loadNextChallenge() {
             state.currentWord = getRandomWord();
+            if (!state.currentWord) { endGame(); return; }
             state.correctAnswer = state.currentWord;
+            const { answerInput, submitAnswerBtn, gameContainer } = allDOMElements;
             answerInput.value = '';
             answerInput.disabled = false;
             submitAnswerBtn.disabled = false;
-            
-            let gameHtml = '';
+            answerInput.focus();
 
-            switch (state.currentGame) {
+            let gameHtml = '';
+            const effectiveGameType = state.currentGame === 'timed-challenge' ? 'spelling-quiz' : state.currentGame;
+
+            switch (effectiveGameType) {
                 case 'spelling-quiz':
-                    gameHtml = `
-                        <h3 class="text-2xl font-bold mb-4">How do you spell this word?</h3>
-                        <button id="speak-word" class="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full shadow-lg transform hover:scale-110 transition-transform duration-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.88 5.88a15.03 15.03 0 0113.8 0M12 18h.01" /></svg>
-                        </button>
-                    `;
+                    gameHtml = `<h3 class="text-2xl font-bold mb-4">How do you spell this word?</h3><button id="speak-word" class="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full shadow-lg"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.88 5.88a15.03 15.03 0 0113.8 0M12 18h.01" /></svg></button>`;
                     gameContainer.innerHTML = gameHtml;
                     document.getElementById('speak-word').addEventListener('click', () => speak(state.currentWord));
-                    speak(state.currentWord); // Speak the word automatically
+                    speak(state.currentWord);
                     break;
-
                 case 'word-scramble':
                     const scrambled = state.currentWord.split('').sort(() => 0.5 - Math.random()).join('');
-                    gameHtml = `
-                        <h3 class="text-2xl font-bold mb-4">Unscramble the word:</h3>
-                        <p class="text-4xl font-mono tracking-widest p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">${scrambled}</p>
-                    `;
+                    gameHtml = `<h3 class="text-2xl font-bold mb-4">Unscramble the word:</h3><p class="text-4xl font-mono tracking-widest p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">${scrambled}</p>`;
                     gameContainer.innerHTML = gameHtml;
                     break;
-
                 case 'missing-letter':
                     let wordWithBlanks = state.currentWord.split('');
                     const missingIndices = new Set();
@@ -454,42 +593,50 @@
                         missingIndices.add(Math.floor(Math.random() * wordWithBlanks.length));
                     }
                     missingIndices.forEach(i => wordWithBlanks[i] = '_');
-                    
-                    gameHtml = `
-                        <h3 class="text-2xl font-bold mb-4">Fill in the missing letters:</h3>
-                        <p class="text-4xl font-mono tracking-widest p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">${wordWithBlanks.join('')}</p>
-                        <p class="text-sm mt-2 text-gray-500">Type the full, corrected word.</p>
-                    `;
-                     gameContainer.innerHTML = gameHtml;
+                    gameHtml = `<h3 class="text-2xl font-bold mb-4">Fill in the missing letters:</h3><p class="text-4xl font-mono tracking-widest p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">${wordWithBlanks.join('')}</p><p class="text-sm mt-2 text-gray-500">Type the full, corrected word.</p>`;
+                    gameContainer.innerHTML = gameHtml;
                     break;
             }
         }
         
-        function showXPFeedback() {
-            xpFeedback.classList.remove('hidden');
-            xpFeedback.classList.add('xp-gain-animation');
-            setTimeout(() => {
-                xpFeedback.classList.add('hidden');
-                xpFeedback.classList.remove('xp-gain-animation');
-            }, 1000);
-        }
-
         function checkAnswer() {
-            const userAnswer = answerInput.value.trim().toLowerCase();
-            const isCorrect = userAnswer === state.correctAnswer.toLowerCase();
+            const { answerInput, submitAnswerBtn, gameContainer } = allDOMElements;
+            const userAnswer = answerInput.value.trim();
+            const isCorrect = userAnswer === state.correctAnswer;
             
+            if (state.currentGame === 'timed-challenge') {
+                if (isCorrect) {
+                    playSound('correct');
+                    state.timedChallenge.score++;
+                    updateTimerDisplay();
+                    loadNextChallenge();
+                } else {
+                    playSound('incorrect');
+                    answerInput.classList.add('incorrect-animation');
+                    setTimeout(() => answerInput.classList.remove('incorrect-animation'), 500);
+                }
+                return;
+            }
+
             answerInput.disabled = true;
             submitAnswerBtn.disabled = true;
-
             if (isCorrect) {
                 playSound('correct');
                 state.xp += XP_PER_CORRECT;
                 answerInput.classList.add('correct-animation');
                 showXPFeedback();
-                if (state.xp >= state.level * XP_PER_LEVEL) {
+                
+                const oldLevel = state.level;
+                while (state.xp >= getCumulativeXpForLevel(state.level + 1)) {
                     state.level++;
-                    // Add a level up celebration later
                 }
+                if (state.level > oldLevel) {
+                    // Check all levels between old and new
+                    for (let i = oldLevel + 1; i <= state.level; i++) {
+                        handleLevelUp(i);
+                    }
+                }
+
                 saveState();
                 updateUI();
                 setTimeout(() => {
@@ -500,7 +647,6 @@
                 playSound('incorrect');
                 answerInput.classList.add('incorrect-animation');
                 gameContainer.innerHTML += `<p class="mt-4 text-red-500 font-bold">Correct answer: <span class="underline">${state.correctAnswer}</span></p>`;
-                speak(`The correct spelling is ${state.correctAnswer.split('').join(', ')}`);
                 setTimeout(() => {
                     answerInput.classList.remove('incorrect-animation');
                     loadNextChallenge();
@@ -508,65 +654,146 @@
             }
         }
 
+        function endGame() {
+            window.speechSynthesis.cancel();
+            clearInterval(state.timedChallenge.timer);
+            if (state.currentGame === 'timed-challenge') {
+                allDOMElements.gameScreen.classList.add('hidden');
+                allDOMElements.finalScoreDisplay.textContent = state.timedChallenge.score;
+                populateEmojiPicker();
+                allDOMElements.nameModal.classList.remove('hidden');
+                allDOMElements.playerNameInput.focus();
+            } else {
+                goBackToMenu();
+            }
+        }
+
         function goBackToMenu() {
             state.currentGame = null;
-            gameScreen.classList.add('hidden');
-            gameMenu.classList.remove('hidden');
-            window.speechSynthesis.cancel(); // Stop any ongoing speech
+            allDOMElements.gameScreen.classList.add('hidden');
+            allDOMElements.leaderboardScreen.classList.add('hidden');
+            allDOMElements.gameMenu.classList.remove('hidden');
+            allDOMElements.progressContainer.classList.remove('hidden');
+            window.speechSynthesis.cancel();
         }
-        
+
         // --- EVENT LISTENERS ---
-        gameChoiceBtns.forEach(btn => {
-            btn.addEventListener('click', () => startGame(btn.dataset.game));
-        });
-
-        backToMenuBtn.addEventListener('click', goBackToMenu);
-        submitAnswerBtn.addEventListener('click', checkAnswer);
-        answerInput.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') {
-                checkAnswer();
-            }
-        });
-
-        wordListUpload.addEventListener('change', (e) => {
+        gameChoiceBtns.forEach(btn => btn.addEventListener('click', () => startGame(btn.dataset.game)));
+        allDOMElements.backToMenuBtn.addEventListener('click', goBackToMenu);
+        allDOMElements.submitAnswerBtn.addEventListener('click', checkAnswer);
+        allDOMElements.answerInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') checkAnswer(); });
+        allDOMElements.themeSelector.addEventListener('change', (e) => { applyTheme(e.target.value); saveState(); });
+        allDOMElements.celebrationSelector.addEventListener('change', (e) => { state.settings.activeCelebration = e.target.value; saveState(); });
+        allDOMElements.showLeaderboardBtn.addEventListener('click', showLeaderboard);
+        allDOMElements.leaderboardBackBtn.addEventListener('click', goBackToMenu);
+        allDOMElements.saveScoreBtn.addEventListener('click', saveScore);
+        allDOMElements.playerNameInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') saveScore(); });
+        allDOMElements.wordListUpload.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const text = event.target.result;
-                    // Split by lines, trim whitespace, filter out empty lines
-                    const words = text.split('\n').map(w => w.trim()).filter(w => w.length > 0);
-                    state.words = words;
-                    saveState();
-                    updateUI();
-                };
-                reader.readAsText(file);
-            }
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                state.words = event.target.result.split('\n').map(w => w.trim()).filter(Boolean);
+                saveState();
+                updateUI();
+            };
+            reader.readAsText(file);
         });
-
-        soundToggle.addEventListener('change', (e) => {
+        allDOMElements.soundToggle.addEventListener('change', (e) => {
             state.settings.sound = e.target.checked;
             saveState();
-            if (!state.settings.sound) {
-                window.speechSynthesis.cancel();
-            }
+            if (!state.settings.sound) window.speechSynthesis.cancel();
         });
-
-        resetProgressBtn.addEventListener('click', () => {
-             if (confirm("Are you sure you want to reset all your progress? This cannot be undone.")) {
+        allDOMElements.resetProgressBtn.addEventListener('click', () => {
+             if (confirm("Are you sure you want to reset all your progress? This includes your level, XP, and leaderboard scores.")) {
                 localStorage.removeItem(SAVE_KEY);
-                // Reset to initial state but keep loaded words
-                const currentWords = state.words;
-                state = {
-                    ...state, // keep settings etc.
-                    level: 1,
-                    xp: 0,
-                    words: currentWords,
-                };
-                updateUI();
+                window.location.reload();
             }
         });
 
+        // --- HELPERS ---
+        function playSound(soundName) { if (state.settings.sound) console.log(`Sound: ${soundName}`); }
+        function speak(text) { if (state.settings.sound) { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(text)); } }
+        function showXPFeedback() { allDOMElements.xpFeedback.classList.remove('hidden'); allDOMElements.xpFeedback.classList.add('xp-gain-animation'); setTimeout(() => { allDOMElements.xpFeedback.classList.add('hidden'); allDOMElements.xpFeedback.classList.remove('xp-gain-animation'); }, 1000); }
+        function updateTimerDisplay() { allDOMElements.gameHeaderInfo.innerHTML = `<span class="text-red-500">Time: ${state.timedChallenge.timeLeft}s</span> | <span class="text-green-500">Score: ${state.timedChallenge.score}</span>`; }
+        function tickTimer() { state.timedChallenge.timeLeft--; updateTimerDisplay(); if (state.timedChallenge.timeLeft <= 0) endGame(); }
+        function saveScore() { const playerName = allDOMElements.playerNameInput.value.trim() || 'Anonymous'; if (!state.leaderboard) state.leaderboard = []; state.leaderboard.push({ name: playerName, score: state.timedChallenge.score }); saveState(); allDOMElements.nameModal.classList.add('hidden'); showLeaderboard(); }
+        function showLeaderboard() { allDOMElements.gameMenu.classList.add('hidden'); allDOMElements.gameScreen.classList.add('hidden'); allDOMElements.leaderboardScreen.classList.remove('hidden'); renderLeaderboard(); }
+        function renderLeaderboard() { const { leaderboardList } = allDOMElements; leaderboardList.innerHTML = ''; if (!state.leaderboard || state.leaderboard.length === 0) { leaderboardList.innerHTML = '<li class="text-center text-gray-500">No scores yet. Be the first!</li>'; return; } const sortedScores = [...state.leaderboard].sort((a, b) => b.score - a.score); sortedScores.forEach((entry, index) => { const li = document.createElement('li'); li.className = 'flex justify-between items-center p-3 rounded-lg'; li.innerHTML = `<div class="flex items-center"><span class="text-lg font-bold w-8">${index + 1}.</span><span class="font-semibold text-lg">${entry.name}</span></div><span class="font-bold text-xl text-yellow-500">${entry.score}</span>`; leaderboardList.appendChild(li); }); }
+        function showLevelUpNotification(message) { const { levelUpNotification } = allDOMElements; levelUpNotification.textContent = message; levelUpNotification.classList.remove('hidden'); setTimeout(() => levelUpNotification.classList.add('hidden'), 3900); }
+
+        // --- CELEBRATION ANIMATIONS ---
+        function launchConfetti() {
+            const canvas = allDOMElements.confettiCanvas;
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            let confetti = [];
+            const confettiCount = 200;
+            const colors = ['#f97316', '#ec4899', '#8b5cf6', '#3b82f6', '#22c55e', '#facc15'];
+            for (let i = 0; i < confettiCount; i++) {
+                confetti.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height - canvas.height, size: Math.random() * 5 + 2, speed: Math.random() * 5 + 2, angle: Math.random() * 360, color: colors[Math.floor(Math.random() * colors.length)], tilt: Math.random() * 10 - 5, tiltAngle: 0, tiltAngleIncrement: Math.random() * 0.1 + 0.05 });
+            }
+            function drawConfetti() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                confetti.forEach((p, i) => {
+                    ctx.beginPath(); ctx.lineWidth = p.size; ctx.strokeStyle = p.color; ctx.moveTo(p.x + p.tilt, p.y); ctx.lineTo(p.x, p.y + p.tilt + p.size); ctx.stroke();
+                    p.y += p.speed; p.tiltAngle += p.tiltAngleIncrement; p.tilt = Math.sin(p.tiltAngle) * 15;
+                    if (p.y > canvas.height) confetti.splice(i, 1);
+                });
+                if (confetti.length > 0) requestAnimationFrame(drawConfetti);
+                else ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            drawConfetti();
+        }
+        function launchFireworks() {
+            const canvas = allDOMElements.confettiCanvas;
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            let fireworks = [];
+            let particles = [];
+            const colors = ['#f97316', '#ec4899', '#8b5cf6', '#3b82f6', '#22c55e', '#facc15'];
+
+            function createFirework() {
+                fireworks.push({ x: Math.random() * canvas.width, y: canvas.height, targetX: Math.random() * canvas.width, targetY: Math.random() * (canvas.height / 2), color: colors[Math.floor(Math.random() * colors.length)], speed: 3 });
+            }
+
+            function createParticles(x, y, color) {
+                for (let i = 0; i < 100; i++) {
+                    particles.push({ x, y, angle: Math.random() * Math.PI * 2, speed: Math.random() * 4 + 1, friction: 0.95, gravity: 0.1, alpha: 1, decay: Math.random() * 0.03 + 0.01, color });
+                }
+            }
+
+            let launchCount = 0;
+            const interval = setInterval(() => {
+                createFirework();
+                if (++launchCount >= 5) clearInterval(interval);
+            }, 400);
+
+            function animate() {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.globalCompositeOperation = 'lighter';
+                fireworks.forEach((fw, i) => {
+                    ctx.beginPath(); ctx.fillStyle = fw.color; ctx.arc(fw.x, fw.y, 2, 0, Math.PI * 2); ctx.fill();
+                    const dx = fw.targetX - fw.x, dy = fw.targetY - fw.y, dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < fw.speed) { createParticles(fw.x, fw.y, fw.color); fireworks.splice(i, 1); } 
+                    else { fw.x += (dx / dist) * fw.speed; fw.y += (dy / dist) * fw.speed; }
+                });
+                particles.forEach((p, i) => {
+                    ctx.beginPath(); ctx.fillStyle = p.color; ctx.globalAlpha = p.alpha; ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill();
+                    p.x += Math.cos(p.angle) * p.speed; p.y += Math.sin(p.angle) * p.speed + p.gravity;
+                    p.speed *= p.friction; p.alpha -= p.decay;
+                    if (p.alpha <= 0) particles.splice(i, 1);
+                });
+                if (fireworks.length > 0 || particles.length > 0) requestAnimationFrame(animate);
+                else ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            animate();
+        }
+        
         // --- INITIALIZATION ---
         loadState();
     });
