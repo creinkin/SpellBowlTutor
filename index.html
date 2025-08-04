@@ -218,189 +218,66 @@
             1000: { type: 'award', id: 'millennia', name: 'Speller of the Millennia' }
         };
 
+        const DEFAULT_WORD_DATA = {
+            "abate": { "sentence": "The storm's fury began to abate." }, "aberration": { "sentence": "A snowstorm in July is a surprising aberration." }, "abhor": { "sentence": "I abhor all forms of cruelty." }, "acquiesce": { "sentence": "He will acquiesce to the demands." }, "alacrity": { "sentence": "She accepted the invitation with alacrity." }, "amiable": { "sentence": "He was an amiable companion." }, "appease": { "sentence": "They tried to appease the angry gods." }, "arcane": { "sentence": "He is a master of arcane knowledge." }, "avarice": { "sentence": "His avarice was insatiable." }, "brazen": { "sentence": "She made a brazen attempt to cheat." }, "brusque": { "sentence": "His brusque manner was off-putting." }, "cajole": { "sentence": "He tried to cajole her into signing." }, "callous": { "sentence": "It was a callous disregard for her feelings." }, "candor": { "sentence": "I appreciate your candor." }, "chide": { "sentence": "She would chide him for his laziness." }, "circumspect": { "sentence": "Be circumspect in your dealings." }, "clandestine": { "sentence": "They held a clandestine meeting." }, "coerce": { "sentence": "He was coerced into signing the confession." }, "coherent": { "sentence": "She gave a coherent account of the incident." }, "complacency": { "sentence": "There is no room for complacency." }, "confidant": { "sentence": "She is my closest confidant." }, "connive": { "sentence": "They connived to overthrow the government." }, "cumulative": { "sentence": "The cumulative effect of the changes was significant." }, "debase": { "sentence": "Do not debase yourself by lying." }, "decry": { "sentence": "They decry the lack of funding." }, "deferential": { "sentence": "He was always deferential to his elders." }, "demure": { "sentence": "She was a demure young lady." }, "deride": { "sentence": "He would deride their efforts." }, "despot": { "sentence": "The despot ruled with an iron fist." }, "diligent": { "sentence": "She is a diligent student." }
+        };
+
         let state = {
             level: 1, xp: 0,
-            words: [
-              "abalone",
-              "abbreviate",
-              "abeyant",
-              "ablaze",
-              "abraded",
-              "abruptly",
-              "absolved",
-              "acaulescent",
-              "accede",
-              "accessibility",
-              "accommodate",
-              "accordionist",
-              "accumulating",
-              "acetic acid",
-              "acidify",
-              "acquiescence",
-              "acrimony",
-              "additive",
-              "adequate",
-              "adjoining",
-              "admissible",
-              "adsorption",
-              "adversity",
-              "advocator",
-              "aesthetic",
-              "a lame",
-              "afterward",
-              "aggravated",
-              "aghast",
-              "agitated",
-              "agricultural",
-              "airiness",
-              "Alabama",
-              "Alcatraz",
-              "alfresco",
-              "all get-out",
-              "Allen wrench",
-              "animating",
-              "annihilate",
-              "anointment",
-              "antagonize",
-              "anteroom",
-              "antipathetic",
-              "antisepsis",
-              "antithetical",
-              "apathetically",
-              "apical",
-              "Apollo",
-              "apostrophe",
-              "apparel",
-              "appellant",
-              "applaud",
-              "appreciable",
-              "apprise",
-              "omit",
-              "approximation",
-              "aquatic",
-              "arbitrary",
-              "archaeologist",
-              "archipelago",
-              "arduously",
-              "aria",
-              "arithmetician",
-              "arraign",
-              "arrondissement",
-              "art deco",
-              "artificial",
-              "aseptic",
-              "aspersion",
-              "assail",
-              "assemblage",
-              "assessment",
-              "assimilation",
-              "assortment",
-              "bachelorhood",
-              "backlotter",
-              "bacterial",
-              "bagatelle",
-              "balaclava",
-              "baldpate",
-              "ballistics",
-              "bambino",
-              "bandit",
-              "banyan",
-              "bardolater",
-              "bareboat",
-              "barista",
-              "baron",
-              "barricade",
-              "base hit",
-              "basing",
-              "baste",
-              "bathrobe",
-              "Bayonne",
-              "bazaar",
-              "beatified",
-              "beauteous",
-              "becalm",
-              "bedevil",
-              "bedstead",
-              "befall",
-              "beggar",
-              "believable",
-              "Bellatrix",
-              "bellwether",
-              "omit",
-              "Beowulf",
-              "bequeath",
-              "beryllium",
-              "best seller",
-              "Betelgeuse",
-              "blotter",
-              "blubbery",
-              "blusterous",
-              "bobbin",
-              "bogey",
-              "Bolshevik",
-              "bon voyage",
-              "bonito",
-              "bookkeeping",
-              "boomerang",
-              "botanist",
-              "bountiful",
-              "brachiate",
-              "braise",
-              "brassiness",
-              "breach",
-              "breastbone",
-              "brick-and-mortar",
-              "brigade",
-              "brimstone",
-              "bristly",
-              "broad-minded",
-              "bromeliad",
-              "broodingly",
-              "bruschetta",
-              "bugler",
-              "bungle",
-              "bureau",
-              "burlap",
-              "burrata",
-              "burrow",
-              "butler",
-              "cacophony",
-              "calculable",
-              "caliper",
-              "calomel",
-              "camaraderie"
-            ],
+            wordData: {},
             settings: { sound: true, activeTheme: 'default', activeCelebration: 'confetti' },
             leaderboard: [],
             unlockedThemes: ['default'],
             unlockedEmojis: [],
             unlockedCelebrations: ['confetti'],
             hasMillenniaAward: false,
-            currentGame: null, currentWord: '', correctAnswer: '',
+            currentGame: null, currentWord: '', currentSentence: '', correctAnswer: '',
             timedChallenge: { timer: null, timeLeft: 0, score: 0 }
         };
 
         const XP_PER_CORRECT = 10;
         const TIMED_CHALLENGE_DURATION = 60;
-        const SAVE_KEY = 'spellBowlProState';
+        const PROGRESS_SAVE_KEY = 'spellBowlProProgress';
+        const WORDS_SAVE_KEY = 'spellBowlProWords';
 
         // --- STATE MANAGEMENT ---
         function saveState() {
             const stateToSave = { ...state };
-            delete stateToSave.timedChallenge.timer; // Don't save active timers
-            localStorage.setItem(SAVE_KEY, JSON.stringify(stateToSave));
+            delete stateToSave.wordData; // Don't save word list with progress
+            delete stateToSave.timedChallenge.timer;
+            localStorage.setItem(PROGRESS_SAVE_KEY, JSON.stringify(stateToSave));
         }
 
-        function loadState() {
-            const savedState = localStorage.getItem(SAVE_KEY);
-            if (savedState) {
-                const parsed = JSON.parse(savedState);
-                // Deep merge to prevent new properties from being overwritten by old save files
-                state = {
-                    ...state, ...parsed,
-                    settings: { ...state.settings, ...(parsed.settings || {}) },
-                };
+        async function initializeApp() {
+            const savedWordData = localStorage.getItem(WORDS_SAVE_KEY);
+            const savedProgress = localStorage.getItem(PROGRESS_SAVE_KEY);
+
+            if (savedWordData) {
+                console.log("Loading words from local storage.");
+                state.wordData = JSON.parse(savedWordData);
+            } else {
+                try {
+                    console.log("Fetching remote word list...");
+                    const response = await fetch('https://creinkin.github.io/SpellBowlTutor/words.json');
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.statusText}`);
+                    }
+                    const data = await response.json();
+                    state.wordData = data;
+                    localStorage.setItem(WORDS_SAVE_KEY, JSON.stringify(data));
+                    console.log("Successfully loaded and cached words from remote URL.");
+                } catch (error) {
+                    console.error("Could not fetch remote words.json, falling back to default list.", error);
+                    state.wordData = DEFAULT_WORD_DATA;
+                    localStorage.setItem(WORDS_SAVE_KEY, JSON.stringify(DEFAULT_WORD_DATA));
+                }
             }
+
+            if (savedProgress) {
+                const parsed = JSON.parse(savedProgress);
+                state = { ...state, ...parsed, settings: { ...state.settings, ...(parsed.settings || {}) } };
+            }
+
             applyTheme(state.settings.activeTheme);
             populateThemeSelector();
             populateCelebrationSelector();
@@ -466,8 +343,8 @@
             allDOMElements.xpDisplay.textContent = `${xpIntoCurrentLevel} / ${xpNeededForLevelUp} XP`;
             allDOMElements.progressBar.style.width = xpNeededForLevelUp > 0 ? `${(xpIntoCurrentLevel / xpNeededForLevelUp) * 100}%` : '0%';
             allDOMElements.soundToggle.checked = state.settings.sound;
-            allDOMElements.wordCountDisplay.textContent = `${state.words.length} words loaded.`;
-            allDOMElements.noWordsMessage.classList.toggle('hidden', state.words.length === 0);
+            allDOMElements.wordCountDisplay.textContent = `${Object.keys(state.wordData).length} words loaded.`;
+            allDOMElements.noWordsMessage.classList.toggle('hidden', Object.keys(state.wordData).length > 0);
             allDOMElements.millenniaAward.classList.toggle('hidden', !state.hasMillenniaAward);
         }
         
@@ -534,12 +411,15 @@
 
         // --- GAME LOGIC ---
         function getRandomWord() {
-            if (state.words.length === 0) return null;
-            return state.words[Math.floor(Math.random() * state.words.length)];
+            const words = Object.keys(state.wordData);
+            if (words.length === 0) return null;
+            const word = words[Math.floor(Math.random() * words.length)];
+            const sentence = state.wordData[word].sentence;
+            return { word, sentence };
         }
 
         function startGame(gameType) {
-            if (state.words.length === 0) {
+            if (Object.keys(state.wordData).length === 0) {
                 allDOMElements.noWordsMessage.classList.add('incorrect-animation');
                 setTimeout(() => allDOMElements.noWordsMessage.classList.remove('incorrect-animation'), 500);
                 return;
@@ -561,9 +441,12 @@
         }
 
         function loadNextChallenge() {
-            state.currentWord = getRandomWord();
-            if (!state.currentWord) { endGame(); return; }
-            state.correctAnswer = state.currentWord;
+            const challenge = getRandomWord();
+            if (!challenge) { endGame(); return; }
+            state.currentWord = challenge.word;
+            state.currentSentence = challenge.sentence;
+            state.correctAnswer = challenge.word;
+            
             const { answerInput, submitAnswerBtn, gameContainer } = allDOMElements;
             answerInput.value = '';
             answerInput.disabled = false;
@@ -577,8 +460,8 @@
                 case 'spelling-quiz':
                     gameHtml = `<h3 class="text-2xl font-bold mb-4">How do you spell this word?</h3><button id="speak-word" class="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full shadow-lg"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.88 5.88a15.03 15.03 0 0113.8 0M12 18h.01" /></svg></button>`;
                     gameContainer.innerHTML = gameHtml;
-                    document.getElementById('speak-word').addEventListener('click', () => speak(state.currentWord));
-                    speak(state.currentWord);
+                    document.getElementById('speak-word').addEventListener('click', () => speak(state.currentWord, state.currentSentence));
+                    speak(state.currentWord, state.currentSentence);
                     break;
                 case 'word-scramble':
                     const scrambled = state.currentWord.split('').sort(() => 0.5 - Math.random()).join('');
@@ -602,6 +485,35 @@
         function checkAnswer() {
             const { answerInput, submitAnswerBtn, gameContainer } = allDOMElements;
             const userAnswer = answerInput.value.trim();
+
+            // --- EASTER EGG ---
+            if (state.currentGame === 'missing-letter' && userAnswer === 'Ooga Booga') {
+                const xpNeeded = getCumulativeXpForLevel(state.level + 1) - state.xp;
+                state.xp += xpNeeded > 0 ? xpNeeded : 10;
+                
+                const oldLevel = state.level;
+                while (state.xp >= getCumulativeXpForLevel(state.level + 1)) {
+                    state.level++;
+                }
+                if (state.level > oldLevel) {
+                    for (let i = oldLevel + 1; i <= state.level; i++) {
+                        handleLevelUp(i);
+                    }
+                }
+                
+                saveState();
+                updateUI();
+                
+                gameContainer.innerHTML += `<p class="mt-4 text-purple-500 font-bold">OOGA BOOGA! You found a secret!</p>`;
+                
+                setTimeout(() => {
+                    loadNextChallenge();
+                }, 2000);
+                
+                return;
+            }
+            // --- END EASTER EGG ---
+
             const isCorrect = userAnswer === state.correctAnswer;
             
             if (state.currentGame === 'timed-challenge') {
@@ -631,7 +543,6 @@
                     state.level++;
                 }
                 if (state.level > oldLevel) {
-                    // Check all levels between old and new
                     for (let i = oldLevel + 1; i <= state.level; i++) {
                         handleLevelUp(i);
                     }
@@ -693,8 +604,12 @@
             if (!file) return;
             const reader = new FileReader();
             reader.onload = (event) => {
-                state.words = event.target.result.split('\n').map(w => w.trim()).filter(Boolean);
-                saveState();
+                const words = event.target.result.split('\n').map(w => w.trim()).filter(Boolean);
+                state.wordData = words.reduce((obj, word) => {
+                    obj[word] = { sentence: `The word is ${word}.` };
+                    return obj;
+                }, {});
+                localStorage.setItem(WORDS_SAVE_KEY, JSON.stringify(state.wordData));
                 updateUI();
             };
             reader.readAsText(file);
@@ -706,14 +621,51 @@
         });
         allDOMElements.resetProgressBtn.addEventListener('click', () => {
              if (confirm("Are you sure you want to reset all your progress? This includes your level, XP, and leaderboard scores.")) {
-                localStorage.removeItem(SAVE_KEY);
+                localStorage.removeItem(PROGRESS_SAVE_KEY);
+                localStorage.removeItem(WORDS_SAVE_KEY);
                 window.location.reload();
             }
         });
 
         // --- HELPERS ---
         function playSound(soundName) { if (state.settings.sound) console.log(`Sound: ${soundName}`); }
-        function speak(text) { if (state.settings.sound) { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(text)); } }
+        
+        async function speak(word, sentence) {
+            if (!state.settings.sound) return;
+            window.speechSynthesis.cancel();
+
+            const formattedWord = word.replace(/ /g, '_');
+            const audioUrl = `https://creinkin.github.io/SpellBowlTutor/media/${formattedWord}__tts.wav`;
+
+            let audioExists = false;
+            try {
+                const response = await fetch(audioUrl, { method: 'HEAD' });
+                if (response.ok) {
+                    audioExists = true;
+                }
+            } catch (error) {
+                console.warn(`Could not check for audio file at ${audioUrl}, falling back to TTS.`, error);
+                audioExists = false;
+            }
+
+            if (audioExists) {
+                const fullSequenceAudio = new Audio(audioUrl);
+                fullSequenceAudio.play();
+            } else {
+                // Fallback to full TTS sequence
+                const texts = [word, sentence, word];
+                const speakNext = () => {
+                    if (texts.length === 0) return;
+                    const text = texts.shift();
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.rate = 0.9;
+                    utterance.onend = speakNext;
+                    window.speechSynthesis.speak(utterance);
+                };
+                speakNext();
+            }
+        }
+
         function showXPFeedback() { allDOMElements.xpFeedback.classList.remove('hidden'); allDOMElements.xpFeedback.classList.add('xp-gain-animation'); setTimeout(() => { allDOMElements.xpFeedback.classList.add('hidden'); allDOMElements.xpFeedback.classList.remove('xp-gain-animation'); }, 1000); }
         function updateTimerDisplay() { allDOMElements.gameHeaderInfo.innerHTML = `<span class="text-red-500">Time: ${state.timedChallenge.timeLeft}s</span> | <span class="text-green-500">Score: ${state.timedChallenge.score}</span>`; }
         function tickTimer() { state.timedChallenge.timeLeft--; updateTimerDisplay(); if (state.timedChallenge.timeLeft <= 0) endGame(); }
@@ -795,7 +747,7 @@
         }
         
         // --- INITIALIZATION ---
-        loadState();
+        initializeApp();
     });
     </script>
 </body>
