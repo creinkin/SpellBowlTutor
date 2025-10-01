@@ -15,7 +15,28 @@
         .theme-default { --primary: #3b82f6; --secondary: #a855f7; --accent: #14b8a6; --header: #3b82f6; --bg-main: #f3f4f6; --bg-card: #ffffff; --text-main: #1f2937; --text-light: #6b7280; --text-inverted: #ffffff; }
         .theme-ocean { --primary: #0ea5e9; --secondary: #6366f1; --accent: #22d3ee; --header: #0ea5e9; --bg-main: #0c4a6e; --bg-card: #07334d; --text-main: #e0f2fe; --text-light: #bae6fd; --text-inverted: #ffffff; }
         .theme-sunset { --primary: #f97316; --secondary: #ec4899; --accent: #d946ef; --header: #f97316; --bg-main: #4c1d95; --bg-card: #3b0764; --text-main: #f5d0fe; --text-light: #e9d5ff; --text-inverted: #ffffff; }
-        .theme-galaxy { --primary: #8b5cf6; --secondary: #d946ef; --accent: #f472b6; --header: #a78bfa; --bg-main: #1e1b4b; --bg-card: #312e81; --text-main: #e0e7ff; --text-light: #c7d2fe; --text-inverted: #ffffff; }
+        
+        /* Revamped Galaxy Theme */
+        .theme-galaxy {
+            --primary: #8b5cf6; --secondary: #d946ef; --accent: #f472b6; --header: #a78bfa; 
+            --bg-main: #000000; --bg-card: rgba(49, 46, 129, 0.8); 
+            --text-main: #e0e7ff; --text-light: #c7d2fe; --text-inverted: #ffffff;
+        }
+        body.theme-galaxy {
+            background-color: #000;
+            background-image: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            overflow: hidden;
+        }
+        body.theme-galaxy::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: radial-gradient(white, rgba(255, 255, 255, 0) 0.5px, transparent 0);
+            background-size: 50px 50px;
+            opacity: 0.3;
+            pointer-events: none;
+        }
 
         body { background-color: var(--bg-main); color: var(--text-main); }
         .game-choice-btn.bg-blue-500, #speak-word { background-color: var(--primary); }
@@ -27,7 +48,7 @@
         .game-choice-btn.bg-orange-500 { background-color: var(--primary); }
         .game-choice-btn.bg-orange-500:hover { background-color: color-mix(in srgb, var(--primary) 85%, black); }
         #app h1 { color: var(--header); }
-        #progress-container, #game-screen > div, #leaderboard-screen > div, footer > div, #name-modal > div { background-color: var(--bg-card); }
+        #progress-container, #game-screen > div, #leaderboard-screen > div, footer > div, #name-modal > div { background-color: var(--bg-card); backdrop-filter: blur(5px); }
         #xp-display, #word-count, .text-gray-500 { color: var(--text-light); }
         .game-choice-btn, #leaderboard-back-btn, #save-score-btn, #show-leaderboard-btn { color: var(--text-inverted); }
 
@@ -50,6 +71,32 @@
         }
         #millennia-award { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        
+        /* Shooting Stars */
+        #shooting-stars-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+        .shooting-star {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(-45deg, #a78bfa, rgba(0, 0, 255, 0));
+            border-radius: 999px;
+            filter: drop-shadow(0 0 6px #a78bfa);
+            animation: tail 3s ease-in-out infinite, shooting 3s ease-in-out infinite;
+        }
+        @keyframes tail {
+            0% { width: 0; } 30% { width: 100px; } 100% { width: 0; }
+        }
+        @keyframes shooting {
+            0% { transform: translateX(0); } 100% { transform: translateX(100vw); }
+        }
+
+        /* Mascot Animations */
+        #mascot-container { transition: transform 0.3s ease-in-out; }
+        #mascot-container.happy { animation: happy-bounce 0.5s ease; }
+        #mascot-container.sad { transform: translateY(10px) rotate(-5deg); }
+        @keyframes happy-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px) scale(1.1); }
+        }
     </style>
 </head>
 <body>
@@ -62,7 +109,10 @@
             <div id="progress-container" class="p-4 rounded-xl shadow-lg">
                 <div class="flex justify-between items-center mb-2">
                     <span class="font-bold text-lg">Level <span id="level-display">1</span></span>
-                    <span id="xp-display" class="text-sm">0 / 100 XP</span>
+                    <div class="flex items-center gap-4">
+                        <span id="streak-display" class="font-bold text-lg text-orange-500">🔥 0</span>
+                        <span id="xp-display" class="text-sm">0 / 100 XP</span>
+                    </div>
                 </div>
                 <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 relative overflow-hidden">
                     <div id="progress-bar" class="bg-green-500 h-4 rounded-full transition-all duration-500 ease-out" style="width: 0%;"></div>
@@ -85,7 +135,10 @@
                     <button data-game="missing-letter" class="game-choice-btn bg-teal-500 text-white font-bold py-6 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
                         <span class="text-2xl">🤔</span><h3 class="text-xl font-bold mt-2">Missing Letter</h3><p class="text-sm opacity-80">Fill in the blanks.</p>
                     </button>
-                    <button data-game="timed-challenge" class="game-choice-btn bg-orange-500 text-white font-bold py-6 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
+                    <button data-game="word-matching" class="game-choice-btn bg-blue-500 text-white font-bold py-6 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
+                        <span class="text-2xl">🧩</span><h3 class="text-xl font-bold mt-2">Word Matching</h3><p class="text-sm opacity-80">Match word to sentence.</p>
+                    </button>
+                    <button data-game="timed-challenge" class="game-choice-btn bg-orange-500 text-white font-bold py-6 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 col-span-1 md:col-span-2">
                         <span class="text-2xl">⏱️</span><h3 class="text-xl font-bold mt-2">Timed Challenge</h3><p class="text-sm opacity-80">Score as many as you can!</p>
                     </button>
                 </div>
@@ -104,6 +157,25 @@
                     <div id="game-container" class="text-center mt-8"></div>
                     <input type="text" id="answer-input" class="w-full mt-6 p-4 text-lg border-2 border-gray-300 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-center">
                     <button id="submit-answer" class="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg shadow-md">Check</button>
+                    <div class="flex justify-center mt-6">
+                        <div id="mascot-container" class="w-24 h-24">
+                            <!-- SVG Mascot -->
+                            <svg viewBox="0 0 100 100" id="mascot-svg">
+                                <g id="mascot-body" class="transition-transform duration-300">
+                                    <path d="M50 95C25.1 95 5 74.9 5 50S25.1 5 50 5s45 20.1 45 45-20.1 45-45 45z" fill="#8B5CF6"/>
+                                    <path d="M50 87c-20.4 0-37-16.6-37-37s16.6-37 37-37 37 16.6 37 37-16.6 37-37 37z" fill="#A78BFA"/>
+                                    <path d="M35 50c0-8.3 6.7-15 15-15s15 6.7 15 15-6.7 15-15 15-15-6.7-15-15z" fill="#EDE9FE"/>
+                                </g>
+                                <g id="mascot-eyes" class="transition-transform duration-200">
+                                    <circle cx="38" cy="48" r="10" fill="white"/>
+                                    <circle cx="62" cy="48" r="10" fill="white"/>
+                                    <circle cx="38" cy="48" r="5" fill="black" class="pupil"/>
+                                    <circle cx="62" cy="48" r="5" fill="black" class="pupil"/>
+                                </g>
+                                <path id="mascot-beak" d="M45 60l5 7 5-7h-10z" fill="#F59E0B"/>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -123,7 +195,7 @@
         <footer class="mt-12">
             <div class="p-6 rounded-xl shadow-lg">
                 <h2 class="text-xl font-bold mb-4 text-center">Settings</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
                     <div class="text-center">
                         <label for="word-list-upload" class="block mb-2 font-semibold">Upload Word List (.txt)</label>
                         <input type="file" id="word-list-upload" accept=".txt" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
@@ -143,8 +215,9 @@
                             <select id="celebration-selector" class="p-2 rounded-md border-2 border-gray-300 bg-white dark:bg-gray-700"></select>
                         </div>
                     </div>
-                    <div class="text-center">
-                         <button id="reset-progress" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md">Reset Progress</button>
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <button id="refresh-words" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg shadow-md">Refresh Word List</button>
+                        <button id="reset-progress" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md">Reset All Progress</button>
                     </div>
                 </div>
             </div>
@@ -167,6 +240,7 @@
     </div>
     <div id="level-up-notification" class="hidden bg-green-500 text-white font-bold py-3 px-6 rounded-full shadow-lg z-50"></div>
     <canvas id="confetti-canvas"></canvas>
+    <div id="shooting-stars-container"></div>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -205,6 +279,10 @@
             emojiPicker: document.getElementById('emoji-picker'),
             emojiList: document.getElementById('emoji-list'),
             millenniaAward: document.getElementById('millennia-award'),
+            shootingStarsContainer: document.getElementById('shooting-stars-container'),
+            streakDisplay: document.getElementById('streak-display'),
+            mascotContainer: document.getElementById('mascot-container'),
+            refreshWordsBtn: document.getElementById('refresh-words'),
         };
         const gameChoiceBtns = document.querySelectorAll('.game-choice-btn');
 
@@ -223,7 +301,7 @@
         };
 
         let state = {
-            level: 1, xp: 0,
+            level: 1, xp: 0, streak: 0, lastPlayed: null,
             wordData: {},
             settings: { sound: true, activeTheme: 'default', activeCelebration: 'confetti' },
             leaderboard: [],
@@ -253,19 +331,14 @@
             const savedProgress = localStorage.getItem(PROGRESS_SAVE_KEY);
 
             if (savedWordData) {
-                console.log("Loading words from local storage.");
                 state.wordData = JSON.parse(savedWordData);
             } else {
                 try {
-                    console.log("Fetching remote word list...");
                     const response = await fetch('https://creinkin.github.io/SpellBowlTutor/words.json');
-                    if (!response.ok) {
-                        throw new Error(`Network response was not ok: ${response.statusText}`);
-                    }
+                    if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
                     const data = await response.json();
                     state.wordData = data;
                     localStorage.setItem(WORDS_SAVE_KEY, JSON.stringify(data));
-                    console.log("Successfully loaded and cached words from remote URL.");
                 } catch (error) {
                     console.error("Could not fetch remote words.json, falling back to default list.", error);
                     state.wordData = DEFAULT_WORD_DATA;
@@ -277,11 +350,29 @@
                 const parsed = JSON.parse(savedProgress);
                 state = { ...state, ...parsed, settings: { ...state.settings, ...(parsed.settings || {}) } };
             }
-
+            
+            updateStreak();
             applyTheme(state.settings.activeTheme);
             populateThemeSelector();
             populateCelebrationSelector();
             updateUI();
+        }
+        
+        // --- STREAK LOGIC ---
+        function updateStreak() {
+            const today = new Date().toDateString();
+            if (state.lastPlayed === today) return; // Already played today
+
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            if (state.lastPlayed === yesterday.toDateString()) {
+                state.streak++;
+            } else {
+                state.streak = 1; // Streak broken or first play
+            }
+            state.lastPlayed = today;
+            saveState();
         }
 
         // --- LEVELING & REWARDS ---
@@ -346,11 +437,27 @@
             allDOMElements.wordCountDisplay.textContent = `${Object.keys(state.wordData).length} words loaded.`;
             allDOMElements.noWordsMessage.classList.toggle('hidden', Object.keys(state.wordData).length > 0);
             allDOMElements.millenniaAward.classList.toggle('hidden', !state.hasMillenniaAward);
+            allDOMElements.streakDisplay.textContent = `🔥 ${state.streak}`;
         }
         
         function applyTheme(themeName) {
             allDOMElements.body.className = `theme-${themeName}`;
             state.settings.activeTheme = themeName;
+            
+            // Handle shooting stars
+            const container = allDOMElements.shootingStarsContainer;
+            container.innerHTML = '';
+            if (themeName === 'galaxy') {
+                for(let i = 0; i < 5; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'shooting-star';
+                    star.style.top = `${Math.random() * 100}%`;
+                    star.style.left = `${Math.random() * 100 - 100}%`; // Start off-screen
+                    star.style.animationDelay = `${Math.random() * 5}s`;
+                    star.style.animationDuration = `${Math.random() * 2 + 3}s`;
+                    container.appendChild(star);
+                }
+            }
         }
 
         function populateThemeSelector() {
@@ -410,8 +517,8 @@
         }
 
         // --- GAME LOGIC ---
-        function getRandomWord() {
-            const words = Object.keys(state.wordData);
+        function getRandomWord(exclude = []) {
+            const words = Object.keys(state.wordData).filter(w => !exclude.includes(w));
             if (words.length === 0) return null;
             const word = words[Math.floor(Math.random() * words.length)];
             const sentence = state.wordData[word].sentence;
@@ -456,17 +563,16 @@
             let gameHtml = '';
             const effectiveGameType = state.currentGame === 'timed-challenge' ? 'spelling-quiz' : state.currentGame;
 
-            switch (effectiveGameType) {
+            switch (state.currentGame) {
                 case 'spelling-quiz':
-                    gameHtml = `<h3 class="text-2xl font-bold mb-4">How do you spell this word?</h3><button id="speak-word" class="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full shadow-lg"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.88 5.88a15.03 15.03 0 0113.8 0M12 18h.01" /></svg></button>`;
-                    gameContainer.innerHTML = gameHtml;
+                case 'timed-challenge':
+                    gameContainer.innerHTML = `<h3 class="text-2xl font-bold mb-4">How do you spell this word?</h3><button id="speak-word" class="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full shadow-lg"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.88 5.88a15.03 15.03 0 0113.8 0M12 18h.01" /></svg></button>`;
                     document.getElementById('speak-word').addEventListener('click', () => speak(state.currentWord, state.currentSentence));
                     speak(state.currentWord, state.currentSentence);
                     break;
                 case 'word-scramble':
                     const scrambled = state.currentWord.split('').sort(() => 0.5 - Math.random()).join('');
-                    gameHtml = `<h3 class="text-2xl font-bold mb-4">Unscramble the word:</h3><p class="text-4xl font-mono tracking-widest p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">${scrambled}</p>`;
-                    gameContainer.innerHTML = gameHtml;
+                    gameContainer.innerHTML = `<h3 class="text-2xl font-bold mb-4">Unscramble the word:</h3><p class="text-4xl font-mono tracking-widest p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">${scrambled}</p>`;
                     break;
                 case 'missing-letter':
                     let wordWithBlanks = state.currentWord.split('');
@@ -476,45 +582,45 @@
                         missingIndices.add(Math.floor(Math.random() * wordWithBlanks.length));
                     }
                     missingIndices.forEach(i => wordWithBlanks[i] = '_');
-                    gameHtml = `<h3 class="text-2xl font-bold mb-4">Fill in the missing letters:</h3><p class="text-4xl font-mono tracking-widest p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">${wordWithBlanks.join('')}</p><p class="text-sm mt-2 text-gray-500">Type the full, corrected word.</p>`;
-                    gameContainer.innerHTML = gameHtml;
+                    gameContainer.innerHTML = `<h3 class="text-2xl font-bold mb-4">Fill in the missing letters:</h3><p class="text-4xl font-mono tracking-widest p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">${wordWithBlanks.join('')}</p><p class="text-sm mt-2 text-gray-500">Type the full, corrected word.</p>`;
+                    break;
+                case 'word-matching':
+                    const choices = [state.currentSentence];
+                    for(let i=0; i<3; i++) {
+                        choices.push(getRandomWord([state.currentWord]).sentence);
+                    }
+                    choices.sort(() => Math.random() - 0.5); // Shuffle
+                    gameContainer.innerHTML = `<h3 class="text-2xl font-bold mb-4">Which sentence uses the word: <span class="text-blue-500">${state.currentWord}</span>?</h3>
+                    <div class="grid grid-cols-1 gap-3 mt-4">
+                        ${choices.map(c => `<button class="match-choice p-4 border-2 rounded-lg text-left">${c}</button>`).join('')}
+                    </div>`;
+                    document.querySelectorAll('.match-choice').forEach(btn => btn.addEventListener('click', (e) => checkAnswer(e.target.textContent)));
                     break;
             }
+            
+            answerInput.classList.toggle('hidden', state.currentGame === 'word-matching');
+            submitAnswerBtn.classList.toggle('hidden', state.currentGame === 'word-matching');
         }
         
-        function checkAnswer() {
-            const { answerInput, submitAnswerBtn, gameContainer } = allDOMElements;
-            const userAnswer = answerInput.value.trim();
+        function checkAnswer(matchChoice = null) {
+            const { answerInput, submitAnswerBtn, gameContainer, mascotContainer } = allDOMElements;
+            const userAnswer = matchChoice !== null ? matchChoice : answerInput.value.trim();
+            const isCorrect = matchChoice !== null ? userAnswer === state.currentSentence : userAnswer === state.correctAnswer;
 
-            // --- EASTER EGG ---
+            // --- EASTER EGGS ---
             if (state.currentGame === 'missing-letter' && userAnswer === 'Ooga Booga') {
                 const xpNeeded = getCumulativeXpForLevel(state.level + 1) - state.xp;
                 state.xp += xpNeeded > 0 ? xpNeeded : 10;
-                
-                const oldLevel = state.level;
-                while (state.xp >= getCumulativeXpForLevel(state.level + 1)) {
-                    state.level++;
-                }
-                if (state.level > oldLevel) {
-                    for (let i = oldLevel + 1; i <= state.level; i++) {
-                        handleLevelUp(i);
-                    }
-                }
-                
-                saveState();
-                updateUI();
-                
-                gameContainer.innerHTML += `<p class="mt-4 text-purple-500 font-bold">OOGA BOOGA! You found a secret!</p>`;
-                
-                setTimeout(() => {
-                    loadNextChallenge();
-                }, 2000);
-                
+                handleEasterEggLevelUp("OOGA BOOGA! You found a secret!");
                 return;
             }
-            // --- END EASTER EGG ---
-
-            const isCorrect = userAnswer === state.correctAnswer;
+            
+            if (state.currentGame === 'spelling-quiz' && userAnswer === 'Butterfinger') {
+                state.xp = getCumulativeXpForLevel(1000);
+                handleEasterEggLevelUp("You found the golden ticket!");
+                return;
+            }
+            // --- END EASTER EGGS ---
             
             if (state.currentGame === 'timed-challenge') {
                 if (isCorrect) {
@@ -534,9 +640,11 @@
             submitAnswerBtn.disabled = true;
             if (isCorrect) {
                 playSound('correct');
+                mascotContainer.classList.add('happy');
                 state.xp += XP_PER_CORRECT;
                 answerInput.classList.add('correct-animation');
                 showXPFeedback();
+                updateStreak();
                 
                 const oldLevel = state.level;
                 while (state.xp >= getCumulativeXpForLevel(state.level + 1)) {
@@ -551,18 +659,47 @@
                 saveState();
                 updateUI();
                 setTimeout(() => {
+                    mascotContainer.classList.remove('happy');
                     answerInput.classList.remove('correct-animation');
                     loadNextChallenge();
                 }, 1500);
             } else {
                 playSound('incorrect');
+                mascotContainer.classList.add('sad');
                 answerInput.classList.add('incorrect-animation');
                 gameContainer.innerHTML += `<p class="mt-4 text-red-500 font-bold">Correct answer: <span class="underline">${state.correctAnswer}</span></p>`;
                 setTimeout(() => {
+                    mascotContainer.classList.remove('sad');
                     answerInput.classList.remove('incorrect-animation');
                     loadNextChallenge();
                 }, 3000);
             }
+        }
+
+        function handleEasterEggLevelUp(message) {
+            const oldLevel = state.level;
+            while (state.xp >= getCumulativeXpForLevel(state.level + 1)) {
+                state.level++;
+            }
+            if (state.level > oldLevel) {
+                for (let i = oldLevel + 1; i <= state.level; i++) {
+                    const reward = LEVEL_REWARDS[i];
+                    if (reward) {
+                         switch(reward.type) {
+                            case 'theme': if (!state.unlockedThemes.includes(reward.id)) state.unlockedThemes.push(reward.id); break;
+                            case 'emoji': if (!state.unlockedEmojis.some(e => e === reward.emojis[0])) state.unlockedEmojis.push(...reward.emojis); break;
+                            case 'celebration': if (!state.unlockedCelebrations.includes(reward.id)) state.unlockedCelebrations.push(reward.id); break;
+                            case 'award': state.hasMillenniaAward = true; break;
+                        }
+                    }
+                }
+                populateThemeSelector();
+                populateCelebrationSelector();
+            }
+            saveState();
+            updateUI();
+            allDOMElements.gameContainer.innerHTML += `<p class="mt-4 text-yellow-500 font-bold">${message}</p>`;
+            setTimeout(() => { loadNextChallenge(); }, 2000);
         }
 
         function endGame() {
@@ -591,8 +728,8 @@
         // --- EVENT LISTENERS ---
         gameChoiceBtns.forEach(btn => btn.addEventListener('click', () => startGame(btn.dataset.game)));
         allDOMElements.backToMenuBtn.addEventListener('click', goBackToMenu);
-        allDOMElements.submitAnswerBtn.addEventListener('click', checkAnswer);
-        allDOMElements.answerInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') checkAnswer(); });
+        allDOMElements.submitAnswerBtn.addEventListener('click', () => checkAnswer(null));
+        allDOMElements.answerInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') checkAnswer(null); });
         allDOMElements.themeSelector.addEventListener('change', (e) => { applyTheme(e.target.value); saveState(); });
         allDOMElements.celebrationSelector.addEventListener('change', (e) => { state.settings.activeCelebration = e.target.value; saveState(); });
         allDOMElements.showLeaderboardBtn.addEventListener('click', showLeaderboard);
@@ -619,8 +756,15 @@
             saveState();
             if (!state.settings.sound) window.speechSynthesis.cancel();
         });
+        allDOMElements.refreshWordsBtn.addEventListener('click', () => {
+            const btn = allDOMElements.refreshWordsBtn;
+            btn.disabled = true;
+            btn.textContent = 'Refreshing...';
+            localStorage.removeItem(WORDS_SAVE_KEY);
+            window.location.reload();
+        });
         allDOMElements.resetProgressBtn.addEventListener('click', () => {
-             if (confirm("Are you sure you want to reset all your progress? This includes your level, XP, and leaderboard scores.")) {
+             if (confirm("Are you sure you want to reset ALL your progress? This includes your level, XP, unlocked rewards, leaderboard scores, and the word list.")) {
                 localStorage.removeItem(PROGRESS_SAVE_KEY);
                 localStorage.removeItem(WORDS_SAVE_KEY);
                 window.location.reload();
@@ -724,24 +868,47 @@
             }, 400);
 
             function animate() {
-                ctx.globalCompositeOperation = 'destination-out';
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.globalCompositeOperation = 'lighter';
+                
                 fireworks.forEach((fw, i) => {
-                    ctx.beginPath(); ctx.fillStyle = fw.color; ctx.arc(fw.x, fw.y, 2, 0, Math.PI * 2); ctx.fill();
+                    ctx.globalAlpha = 1;
+                    ctx.beginPath(); 
+                    ctx.fillStyle = fw.color; 
+                    ctx.arc(fw.x, fw.y, 2, 0, Math.PI * 2); 
+                    ctx.fill();
                     const dx = fw.targetX - fw.x, dy = fw.targetY - fw.y, dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < fw.speed) { createParticles(fw.x, fw.y, fw.color); fireworks.splice(i, 1); } 
-                    else { fw.x += (dx / dist) * fw.speed; fw.y += (dy / dist) * fw.speed; }
+                    if (dist < fw.speed) { 
+                        createParticles(fw.x, fw.y, fw.color); 
+                        fireworks.splice(i, 1); 
+                    } else { 
+                        fw.x += (dx / dist) * fw.speed; 
+                        fw.y += (dy / dist) * fw.speed; 
+                    }
                 });
+
                 particles.forEach((p, i) => {
-                    ctx.beginPath(); ctx.fillStyle = p.color; ctx.globalAlpha = p.alpha; ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill();
-                    p.x += Math.cos(p.angle) * p.speed; p.y += Math.sin(p.angle) * p.speed + p.gravity;
-                    p.speed *= p.friction; p.alpha -= p.decay;
+                    ctx.beginPath(); 
+                    ctx.fillStyle = p.color; 
+                    ctx.globalAlpha = p.alpha; 
+                    ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); 
+                    ctx.fill();
+                    p.x += Math.cos(p.angle) * p.speed; 
+                    p.y += Math.sin(p.angle) * p.speed + p.gravity;
+                    p.speed *= p.friction; 
+                    p.alpha -= p.decay;
                     if (p.alpha <= 0) particles.splice(i, 1);
                 });
-                if (fireworks.length > 0 || particles.length > 0) requestAnimationFrame(animate);
-                else ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.globalAlpha = 1;
+
+                if (fireworks.length > 0 || particles.length > 0) {
+                    requestAnimationFrame(animate);
+                } else {
+                     ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
             }
             animate();
         }
@@ -752,3 +919,4 @@
     </script>
 </body>
 </html>
+
